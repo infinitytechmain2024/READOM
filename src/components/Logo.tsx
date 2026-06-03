@@ -5,18 +5,16 @@ interface LogoProps {
 /** Angular rune-style READOM mark used across the site. */
 const Logo = ({ className }: LogoProps) => (
   <svg
-    viewBox="0 0 32 40"
+    width={40.5}
+    height={86.5}
+    viewBox="0 0 45 88"
     fill="none"
     stroke="currentColor"
-    strokeWidth={2.5}
-    strokeLinecap="round"
-    strokeLinejoin="round"
+    strokeWidth={3}
     className={className}
     aria-hidden="true"
   >
-    <path d="M8 38 V4 L24 4" />
-    <path d="M8 20 L24 4" />
-    <path d="M8 20 L22 32" />
+    <path d="M2 1.5L42 41.5L34.5 49L13 27.5V35L41.5 63.5L34.5 70.5L13 49V86.5H1.5V0.5V0" />
   </svg>
 );
 

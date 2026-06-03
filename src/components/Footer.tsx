@@ -50,7 +50,7 @@ const Footer = () => {
       <div className="container mx-auto px-4 py-14">
         {/* Brand */}
         <Link to="/" className="flex items-center gap-2 mb-10 text-primary">
-          <Logo className="h-8 w-8" />
+          <Logo />
           <span className="font-display text-xl font-bold text-primary">{t('brand')}</span>
         </Link>
 

@@ -34,10 +34,10 @@ const BookCard = ({ book, index = 0 }: BookCardProps) => {
             </div>
           </div>
         </div>
-        <h3 className="font-display font-semibold text-sm text-foreground group-hover:text-primary transition-colors line-clamp-1">
+        <h3 className="font-display font-semibold text-sm text-gray-900 group-hover:text-primary transition-colors line-clamp-1">
           {book.title}
         </h3>
-        <p className="text-xs text-muted-foreground mt-0.5">{book.author}</p>
+        <p className="text-xs text-gray-500 mt-0.5">{book.author}</p>
       </Link>
     </motion.div>
   );

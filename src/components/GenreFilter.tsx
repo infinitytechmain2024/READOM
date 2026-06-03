@@ -28,46 +28,59 @@ const GenreFilter = () => {
           initial={{ opacity: 0, x: -20 }}
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true }}
-          className="text-3xl sm:text-4xl font-display font-bold mb-8"
+          className="text-3xl sm:text-4xl font-display font-bold mb-8 text-gray-900"
         >
           {t('sections.books')}
         </motion.h2>
 
-        <h3 className="text-sm font-medium text-muted-foreground mb-4">{t('sections.genres')}</h3>
+        <h3 className="text-sm font-medium text-gray-500 mb-4">{t('sections.genres')}</h3>
 
-        {/* Genre icon tabs */}
+        {/* Genre tabs */}
         <div className="flex flex-wrap gap-3 mb-10">
           {genres.map(genre => {
             const Icon = iconMap[genre.icon] ?? LayoutGrid;
             const isActive = activeGenre === genre.id;
             return (
-              <button
+              <motion.button
                 key={genre.id}
                 onClick={() => setActiveGenre(genre.id)}
-                title={t(genre.key)}
-                className={`flex items-center justify-center gap-2 h-12 rounded-xl border transition-all duration-200 ${
-                  genre.id === 'all' ? 'px-5' : 'w-12'
-                } ${
+                whileHover={{ scale: 1.06 }}
+                whileTap={{ scale: 0.94 }}
+                transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                className={`relative flex items-center gap-2 h-11 px-4 rounded-xl border text-sm font-medium ${
                   isActive
-                    ? 'bg-primary text-primary-foreground border-primary glow-gold'
-                    : 'bg-card text-foreground/70 border-border hover:border-primary/50 hover:text-primary'
+                    ? 'border-primary text-primary-foreground'
+                    : 'border-gray-200 bg-gray-50 text-gray-700 hover:border-primary/50 hover:text-primary transition-colors'
                 }`}
               >
-                <Icon className="h-5 w-5 shrink-0" />
-                {genre.id === 'all' && (
-                  <span className="text-sm font-semibold uppercase tracking-wide">{t(genre.key)}</span>
+                {isActive && (
+                  <motion.span
+                    layoutId="genre-active-pill"
+                    className="absolute inset-0 -z-0 rounded-xl bg-primary glow-gold"
+                    transition={{ type: 'spring', stiffness: 400, damping: 32 }}
+                  />
                 )}
-              </button>
+                <span className="relative z-10 flex items-center gap-2 whitespace-nowrap">
+                  <Icon className="h-4 w-4 shrink-0" />
+                  {t(genre.key)}
+                </span>
+              </motion.button>
             );
           })}
         </div>
 
         {/* Books grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-6">
+        <motion.div
+          key={activeGenre}
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-5"
+        >
           {filteredBooks.map((book, i) => (
             <BookCard key={book.id} book={book} index={i} />
           ))}
-        </div>
+        </motion.div>
       </div>
     </section>
   );

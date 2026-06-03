@@ -45,7 +45,7 @@ const HeroSection = () => {
       {/* Background */}
       <div className="absolute inset-0">
         <img src={heroImage} alt="Library" className="w-full h-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-b from-background/85 via-background/65 to-background" />
+        <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-background/20 to-background" />
       </div>
 
       {/* Content */}
@@ -54,10 +54,11 @@ const HeroSection = () => {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="text-4xl sm:text-5xl lg:text-6xl font-display font-bold leading-tight mb-10"
+          style={{ color: '#FFCC18' }}
+          className="text-shadow-hero text-4xl sm:text-5xl lg:text-6xl font-display font-bold leading-tight mb-10"
         >
           {t('hero.title')}{' '}
-          <span className="text-gradient-gold">{t('brand')}</span>
+          {t('brand')}
         </motion.h1>
 
         {/* Search panel */}
@@ -69,7 +70,7 @@ const HeroSection = () => {
         >
           <div ref={containerRef} className="relative flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
               <input
                 type="text"
                 value={query}
@@ -77,13 +78,13 @@ const HeroSection = () => {
                 onFocus={() => setIsOpen(true)}
                 onKeyDown={(e) => e.key === 'Enter' && submitSearch()}
                 placeholder={t('hero.searchPlaceholder')}
-                className="w-full h-14 pl-12 pr-10 rounded-xl bg-background/60 border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                className="w-full h-14 pl-12 pr-10 rounded-xl bg-white border border-gray-200 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
               />
               {query && (
                 <button
                   onClick={() => { setQuery(''); setIsOpen(false); }}
                   aria-label={t('hero.clear')}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 transition-colors"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -91,44 +92,59 @@ const HeroSection = () => {
 
               {/* Results dropdown */}
               {isOpen && query.trim() && (
-                <div className="absolute z-20 left-0 right-0 top-[calc(100%+0.5rem)] glass-card rounded-xl overflow-hidden text-left max-h-80 overflow-y-auto">
+                <div className="absolute z-20 left-0 right-0 top-[calc(100%+0.5rem)] bg-white border border-gray-200 shadow-2xl rounded-xl overflow-hidden text-left max-h-80 overflow-y-auto">
                   {results.length > 0 ? (
                     results.map((book) => (
                       <Link
                         key={book.id}
                         to={`/book/${book.id}`}
                         onClick={() => setIsOpen(false)}
-                        className="flex items-center gap-3 p-3 hover:bg-primary/10 transition-colors border-b border-border/50 last:border-0"
+                        className="flex items-center gap-3 p-3 hover:bg-gray-100 transition-colors border-b border-gray-100 last:border-0"
                       >
                         <img src={book.cover} alt={book.title} className="h-14 w-10 rounded object-cover shrink-0" />
                         <div className="min-w-0">
-                          <p className="font-display font-semibold text-sm text-foreground truncate">{book.title}</p>
-                          <p className="text-xs text-muted-foreground truncate">{book.author}</p>
-                          <p className="text-xs text-primary/80 truncate">{t(`genres.${book.genre}`)}</p>
+                          <p className="font-display font-semibold text-sm text-gray-900 truncate">{book.title}</p>
+                          <p className="text-xs text-gray-500 truncate">{book.author}</p>
+                          <p className="text-xs text-gold-dark truncate">{t(`genres.${book.genre}`)}</p>
                         </div>
                       </Link>
                     ))
                   ) : (
-                    <p className="p-4 text-sm text-muted-foreground text-center">{t('hero.noResults')}</p>
+                    <p className="p-4 text-sm text-gray-500 text-center">{t('hero.noResults')}</p>
                   )}
                 </div>
               )}
             </div>
 
-            <Button onClick={submitSearch} className="sm:w-32 h-14 glow-gold">
+            <Button
+              onClick={submitSearch}
+              style={{ backgroundColor: '#FFCC18' }}
+              className="sm:w-32 h-14 font-bold text-black hover:opacity-90 hover:bg-[#FFCC18] glow-gold"
+            >
               {t('hero.find')}
             </Button>
           </div>
         </motion.div>
 
         {/* Community CTA */}
-        <motion.p
+        <motion.h2
+          id="community"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.4 }}
-          className="text-lg sm:text-xl font-display font-semibold text-gradient-gold mb-6"
+          style={{ color: '#FFCC18' }}
+          className="scroll-mt-24 text-shadow-hero text-2xl sm:text-3xl font-display font-bold mb-5"
         >
           {t('hero.community')}
+        </motion.h2>
+
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.5 }}
+          className="text-shadow-hero text-sm sm:text-base text-foreground/90 max-w-xl mx-auto mb-8 leading-relaxed"
+        >
+          {t('hero.communityText')}
         </motion.p>
 
         <motion.div

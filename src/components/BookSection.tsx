@@ -41,7 +41,7 @@ const BookSection = ({ titleKey, books }: BookSectionProps) => {
             initial={{ opacity: 0, x: -20 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            className="text-2xl sm:text-3xl font-display font-bold"
+            className="text-2xl sm:text-3xl font-display font-bold text-gray-900"
           >
             {t(titleKey)}
           </motion.h2>
@@ -56,18 +56,18 @@ const BookSection = ({ titleKey, books }: BookSectionProps) => {
           <button
             onClick={scrollPrev}
             aria-label="Previous"
-            className="hidden md:flex shrink-0 h-12 w-12 items-center justify-center rounded-full border border-border text-foreground/70 hover:border-primary hover:text-primary transition-colors"
+            className="hidden md:flex shrink-0 h-12 w-12 items-center justify-center rounded-full border border-gray-300 text-gray-600 hover:border-primary hover:text-primary transition-colors"
           >
             <ChevronLeft className="h-6 w-6" />
           </button>
 
           {/* Carousel viewport */}
           <div className="overflow-hidden flex-1" ref={emblaRef}>
-            <div className="flex gap-5 sm:gap-6">
+            <div className="flex gap-4 sm:gap-5">
               {books.map((book) => (
                 <div
                   key={book.id}
-                  className="shrink-0 basis-1/2 sm:basis-1/3 lg:basis-[31%]"
+                  className="shrink-0 basis-[calc((100%-1rem)/2)] sm:basis-[calc((100%-2.5rem)/3)] md:basis-[calc((100%-3.75rem)/4)] lg:basis-[calc((100%-5rem)/5)] xl:basis-[calc((100%-6.25rem)/6)]"
                 >
                   <Link to={`/book/${book.id}`} className="group block hover-lift">
                     <div className="relative aspect-[2/3] rounded-lg overflow-hidden mb-3">
@@ -83,7 +83,7 @@ const BookSection = ({ titleKey, books }: BookSectionProps) => {
                         </div>
                       </div>
                     </div>
-                    <h3 className="text-center font-display font-semibold text-sm text-foreground group-hover:text-primary transition-colors line-clamp-2">
+                    <h3 className="text-center font-display font-semibold text-sm text-gray-900 group-hover:text-primary transition-colors line-clamp-2">
                       {book.title}
                     </h3>
                   </Link>
@@ -96,7 +96,7 @@ const BookSection = ({ titleKey, books }: BookSectionProps) => {
           <button
             onClick={scrollNext}
             aria-label="Next"
-            className="hidden md:flex shrink-0 h-12 w-12 items-center justify-center rounded-full border border-border text-foreground/70 hover:border-primary hover:text-primary transition-colors"
+            className="hidden md:flex shrink-0 h-12 w-12 items-center justify-center rounded-full border border-gray-300 text-gray-600 hover:border-primary hover:text-primary transition-colors"
           >
             <ChevronRight className="h-6 w-6" />
           </button>

@@ -10,10 +10,10 @@ interface Stage {
 }
 
 const stages: Stage[] = [
-  { num: 1, textKey: 'plans.stage1', color: '142 70% 50%', glow: '142 70% 50%' },
+  { num: 1, textKey: 'plans.stage1', color: '270 70% 65%', glow: '270 70% 65%' },
   { num: 2, textKey: 'plans.stage2', color: '270 70% 65%', glow: '270 70% 65%' },
   { num: 3, textKey: 'plans.stage3', color: '270 70% 65%', glow: '270 70% 65%' },
-  { num: 4, textKey: 'plans.stage4', color: '43 80% 55%', glow: '43 80% 55%' },
+  { num: 4, textKey: 'plans.stage4', color: '270 70% 65%', glow: '270 70% 65%' },
 ];
 
 const RoadmapSection = () => {
@@ -32,11 +32,33 @@ const RoadmapSection = () => {
 
         <div className="relative max-w-3xl mx-auto">
           {/* vertical connecting line */}
-          <div className="absolute left-1/2 top-0 bottom-0 -translate-x-1/2 w-px bg-gradient-to-b from-[hsl(142_70%_50%)] via-[hsl(270_70%_65%)] to-[hsl(43_80%_55%)] opacity-50" />
+          <div className="absolute left-1/2 top-0 bottom-0 -translate-x-1/2 w-px bg-[hsl(270_70%_65%)] opacity-50" />
 
           <div className="flex flex-col gap-16">
             {stages.map((stage, i) => {
               const isLeft = i % 2 === 0;
+              const longLine = (
+                <span
+                  className="hidden h-px flex-1 opacity-50 sm:block"
+                  style={{ backgroundColor: `hsl(${stage.color})` }}
+                />
+              );
+              const shortLine = (
+                <span
+                  className="hidden h-px w-10 opacity-50 sm:block"
+                  style={{ backgroundColor: `hsl(${stage.color})` }}
+                />
+              );
+              const textEl = (
+                <p className="text-sm text-foreground/70 whitespace-pre-line leading-relaxed">
+                  {t(stage.textKey)}
+                </p>
+              );
+              const runeEl = (
+                <div className="hidden shrink-0 sm:block" style={{ color: `hsl(${stage.color})` }}>
+                  <Logo className="opacity-80" />
+                </div>
+              );
               return (
                 <motion.div
                   key={stage.num}
@@ -44,36 +66,37 @@ const RoadmapSection = () => {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.5, delay: i * 0.1 }}
-                  className="relative grid grid-cols-[1fr_auto_1fr] items-center gap-4"
+                  className="relative grid grid-cols-[1fr_auto_1fr] items-center gap-0"
                 >
-                  {/* text — alternates side */}
-                  <div className={isLeft ? 'text-right pr-2' : 'col-start-3 text-left pl-2'}>
-                    <p className="text-sm text-foreground/70 whitespace-pre-line leading-relaxed">
-                      {t(stage.textKey)}
-                    </p>
-                  </div>
-
-                  {/* rune on the empty side */}
-                  <div
-                    className={`hidden sm:block ${isLeft ? 'col-start-3 justify-self-start pl-2' : 'col-start-1 justify-self-end pr-2'}`}
-                    style={{ color: `hsl(${stage.color})` }}
-                  >
-                    <Logo className="h-10 w-10 opacity-80" />
+                  {/* left cell: text hugs the outer edge (long line); rune sits close to the node (short line) */}
+                  <div className={`row-start-1 col-start-1 flex items-center gap-3 ${isLeft ? 'text-right' : 'justify-end'}`}>
+                    {isLeft ? textEl : runeEl}
+                    {isLeft ? longLine : shortLine}
                   </div>
 
                   {/* node */}
-                  <div className="col-start-2 flex items-center justify-center">
+                  <div className="relative z-10 row-start-1 col-start-2 flex items-center justify-center">
                     <div
-                      className="relative flex h-14 w-14 items-center justify-center rounded-full border-2 font-display text-xl font-bold"
+                      className="relative flex h-12 w-12 rotate-45 items-center justify-center rounded-sm border-2"
                       style={{
                         borderColor: `hsl(${stage.color})`,
-                        color: `hsl(${stage.color})`,
                         background: 'hsl(220 18% 4%)',
                         boxShadow: `0 0 24px -2px hsl(${stage.glow} / 0.7)`,
                       }}
                     >
-                      {stage.num}
+                      <span
+                        className="-rotate-45 font-display text-xl font-bold"
+                        style={{ color: `hsl(${stage.color})` }}
+                      >
+                        {stage.num}
+                      </span>
                     </div>
+                  </div>
+
+                  {/* right cell: rune sits close to the node (short line); text hugs the outer edge (long line) */}
+                  <div className={`row-start-1 col-start-3 flex items-center gap-3 ${isLeft ? 'justify-start' : 'text-left'}`}>
+                    {isLeft ? shortLine : longLine}
+                    {isLeft ? runeEl : textEl}
                   </div>
                 </motion.div>
               );

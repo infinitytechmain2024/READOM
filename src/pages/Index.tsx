@@ -13,7 +13,7 @@ const Index = () => {
   const popular = mockBooks.filter(b => b.isPopular);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-white">
       <Navbar />
       <HeroSection />
       <GenreFilter />
