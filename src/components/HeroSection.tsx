@@ -1,61 +1,136 @@
 import { useTranslation } from 'react-i18next';
-import { Search } from 'lucide-react';
+import { Search, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
-import heroImage from '@/assets/hero-library.jpg';
+import { useState, useMemo, useRef, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { mockBooks } from '@/data/books';
+import heroImage from '@/assets/hero-library.png';
 
 const HeroSection = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const [query, setQuery] = useState('');
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const results = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return [];
+    return mockBooks.filter((book) =>
+      [book.title, book.author, t(`genres.${book.genre}`), book.genre]
+        .some((field) => field.toLowerCase().includes(q))
+    );
+  }, [query, t]);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const onClick = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', onClick);
+    return () => document.removeEventListener('mousedown', onClick);
+  }, []);
+
+  const submitSearch = () => {
+    if (results.length > 0) {
+      navigate(`/book/${results[0].id}`);
+    }
+  };
 
   return (
-    <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden">
+    <section id="top" className="relative min-h-[88vh] flex items-center justify-center overflow-hidden">
       {/* Background */}
       <div className="absolute inset-0">
-        <img
-          src={heroImage}
-          alt="Library"
-          className="w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/60 to-background" />
+        <img src={heroImage} alt="Library" className="w-full h-full object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-b from-background/85 via-background/65 to-background" />
       </div>
 
       {/* Content */}
-      <div className="relative z-10 container mx-auto px-4 text-center max-w-3xl">
+      <div className="relative z-10 container mx-auto px-4 text-center max-w-2xl pt-20">
         <motion.h1
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="text-4xl sm:text-5xl lg:text-6xl font-display font-bold leading-tight mb-6"
+          className="text-4xl sm:text-5xl lg:text-6xl font-display font-bold leading-tight mb-10"
         >
           {t('hero.title')}{' '}
-          <span className="text-gradient-gold">{t('hero.titleHighlight')}</span>
+          <span className="text-gradient-gold">{t('brand')}</span>
         </motion.h1>
 
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          className="text-lg text-muted-foreground mb-8 max-w-xl mx-auto"
-        >
-          {t('hero.subtitle')}
-        </motion.p>
-
-        {/* Search bar */}
+        {/* Search panel */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.4 }}
-          className="relative max-w-lg mx-auto mb-8"
+          transition={{ duration: 0.8, delay: 0.2 }}
+          className="glass-card rounded-2xl p-4 sm:p-5 mb-8"
         >
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-          <input
-            type="text"
-            placeholder={t('hero.searchPlaceholder')}
-            className="w-full h-14 pl-12 pr-4 rounded-xl bg-card/80 backdrop-blur-md border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
-          />
+          <div ref={containerRef} className="relative flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+              <input
+                type="text"
+                value={query}
+                onChange={(e) => { setQuery(e.target.value); setIsOpen(true); }}
+                onFocus={() => setIsOpen(true)}
+                onKeyDown={(e) => e.key === 'Enter' && submitSearch()}
+                placeholder={t('hero.searchPlaceholder')}
+                className="w-full h-14 pl-12 pr-10 rounded-xl bg-background/60 border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+              />
+              {query && (
+                <button
+                  onClick={() => { setQuery(''); setIsOpen(false); }}
+                  aria-label={t('hero.clear')}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+
+              {/* Results dropdown */}
+              {isOpen && query.trim() && (
+                <div className="absolute z-20 left-0 right-0 top-[calc(100%+0.5rem)] glass-card rounded-xl overflow-hidden text-left max-h-80 overflow-y-auto">
+                  {results.length > 0 ? (
+                    results.map((book) => (
+                      <Link
+                        key={book.id}
+                        to={`/book/${book.id}`}
+                        onClick={() => setIsOpen(false)}
+                        className="flex items-center gap-3 p-3 hover:bg-primary/10 transition-colors border-b border-border/50 last:border-0"
+                      >
+                        <img src={book.cover} alt={book.title} className="h-14 w-10 rounded object-cover shrink-0" />
+                        <div className="min-w-0">
+                          <p className="font-display font-semibold text-sm text-foreground truncate">{book.title}</p>
+                          <p className="text-xs text-muted-foreground truncate">{book.author}</p>
+                          <p className="text-xs text-primary/80 truncate">{t(`genres.${book.genre}`)}</p>
+                        </div>
+                      </Link>
+                    ))
+                  ) : (
+                    <p className="p-4 text-sm text-muted-foreground text-center">{t('hero.noResults')}</p>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <Button onClick={submitSearch} className="sm:w-32 h-14 glow-gold">
+              {t('hero.find')}
+            </Button>
+          </div>
         </motion.div>
 
-        {/* CTAs */}
+        {/* Community CTA */}
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.4 }}
+          className="text-lg sm:text-xl font-display font-semibold text-gradient-gold mb-6"
+        >
+          {t('hero.community')}
+        </motion.p>
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -68,7 +143,7 @@ const HeroSection = () => {
           <Button
             size="lg"
             variant="outline"
-            className="text-base px-8 h-12 border-primary/40 text-primary hover:bg-primary/10"
+            className="text-base px-8 h-12 border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground"
           >
             {t('hero.startWriting')}
           </Button>

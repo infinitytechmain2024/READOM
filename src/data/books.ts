@@ -21,15 +21,17 @@ export interface Book {
 }
 
 export const genres = [
-  { id: 'all', key: 'genres.all' },
-  { id: 'business', key: 'genres.business' },
-  { id: 'psychology', key: 'genres.psychology' },
-  { id: 'self-development', key: 'genres.selfDev' },
-  { id: 'fantasy', key: 'genres.fantasy' },
-  { id: 'sci-fi', key: 'genres.scifi' },
-  { id: 'philosophy', key: 'genres.philosophy' },
-  { id: 'biography', key: 'genres.biography' },
-  { id: 'thriller', key: 'genres.thriller' },
+  { id: 'all', key: 'genres.all', icon: 'LayoutGrid' },
+  { id: 'business', key: 'genres.business', icon: 'Briefcase' },
+  { id: 'psychology', key: 'genres.psychology', icon: 'Brain' },
+  { id: 'self-development', key: 'genres.selfDev', icon: 'Sparkles' },
+  { id: 'fantasy', key: 'genres.fantasy', icon: 'Wand2' },
+  { id: 'sci-fi', key: 'genres.scifi', icon: 'Rocket' },
+  { id: 'philosophy', key: 'genres.philosophy', icon: 'Lightbulb' },
+  { id: 'biography', key: 'genres.biography', icon: 'User' },
+  { id: 'thriller', key: 'genres.thriller', icon: 'Skull' },
+  { id: 'romance', key: 'genres.romance', icon: 'Heart' },
+  { id: 'detective', key: 'genres.detective', icon: 'Search' },
 ];
 
 export const mockBooks: Book[] = [
