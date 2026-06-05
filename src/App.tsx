@@ -15,16 +15,14 @@ import ScriptoriumBooks from "./scriptorium/pages/Books.tsx";
 import ScriptoriumBookDetail from "./scriptorium/pages/BookDetail.tsx";
 import ScriptoriumPlaceholder from "./scriptorium/pages/Placeholder.tsx";
 import NotFound from "./pages/NotFound.tsx";
-
 const queryClient = new QueryClient();
-
 const App = () => (
   <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} disableTransitionOnChange>
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
+      <BrowserRouter basename="/READOM">
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/book/:id" element={<Reader />} />
@@ -40,5 +38,4 @@ const App = () => (
   </QueryClientProvider>
   </ThemeProvider>
 );
-
 export default App;
