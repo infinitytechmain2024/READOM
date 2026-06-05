@@ -9,6 +9,11 @@ import Reader from "./pages/Reader.tsx";
 import Login from "./pages/Login.tsx";
 import Register from "./pages/Register.tsx";
 import ResetPassword from "./pages/ResetPassword.tsx";
+import ScriptoriumLayout from "./scriptorium/ScriptoriumLayout.tsx";
+import ScriptoriumDashboard from "./scriptorium/pages/Dashboard.tsx";
+import ScriptoriumBooks from "./scriptorium/pages/Books.tsx";
+import ScriptoriumBookDetail from "./scriptorium/pages/BookDetail.tsx";
+import ScriptoriumPlaceholder from "./scriptorium/pages/Placeholder.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ShieldAlert } from 'lucide-react';
 import AuthLayout from '@/components/auth/AuthLayout';
 import { AuthHeading, AuthInput, PasswordInput, AuthSubmit, OrDivider, SocialButton } from '@/components/auth/AuthControls';
@@ -8,14 +8,17 @@ import {
   FacebookIcon, LinkedInIcon, GoogleIcon, TelegramIcon, ViberIcon, WhatsAppIcon,
 } from '@/components/auth/brandIcons';
 import { isValidEmail } from '@/lib/validators';
+import { authenticateUser, startSession, InvalidCredentialsError } from '@/integrations/localdb';
 
 const Login = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [formError, setFormError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError(null);
 
@@ -28,7 +31,22 @@ const Login = () => {
       return;
     }
 
-    // TODO(backend): call sign-in endpoint with the validated credentials.
+    // Authenticate against the local database.
+    // TODO(backend): replace with the real sign-in endpoint.
+    setSubmitting(true);
+    try {
+      const user = await authenticateUser(email, password);
+      startSession(user);
+      navigate('/');
+    } catch (err) {
+      if (err instanceof InvalidCredentialsError) {
+        setFormError(t('auth.invalidCredentials'));
+      } else {
+        setFormError(t('auth.errGeneric'));
+      }
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const providers = [
@@ -66,7 +84,7 @@ const Login = () => {
           </p>
         )}
 
-        <AuthSubmit>{t('auth.loginBtn')}</AuthSubmit>
+        <AuthSubmit disabled={submitting}>{t('auth.loginBtn')}</AuthSubmit>
       </form>
 
       <div className="mt-5 space-y-1.5 text-center text-sm text-white/75">

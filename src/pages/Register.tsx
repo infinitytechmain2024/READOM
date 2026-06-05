@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Check, Loader2, ShieldAlert, ShieldCheck } from 'lucide-react';
 import AuthLayout from '@/components/auth/AuthLayout';
 import { AuthHeading, AuthInput, PasswordInput, AuthSubmit, OrDivider, SocialButton } from '@/components/auth/AuthControls';
@@ -12,9 +12,12 @@ import { getPasswordBreachCount } from '@/lib/passwordBreach';
 import { isValidEmail } from '@/lib/validators';
 import { usePasswordBreach } from '@/hooks/usePasswordBreach';
 import { usePasswordMatch } from '@/hooks/usePasswordMatch';
+import { registerUser, EmailTakenError } from '@/integrations/localdb';
 
 const Register = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
@@ -32,6 +35,10 @@ const Register = () => {
     e.preventDefault();
     setFormError(null);
 
+    if (!fullName.trim()) {
+      setFormError(t('auth.nameRequired'));
+      return;
+    }
     if (!isValidEmail(email)) {
       setFormError(t('auth.invalidEmail'));
       return;
@@ -58,11 +65,23 @@ const Register = () => {
         setFormError(t('auth.breachFound', { count }));
         return;
       }
-      // All checks passed — hand off to the backend registration here.
-      // TODO(backend): call sign-up endpoint with the validated credentials.
     } catch {
       setFormError(t('auth.breachCheckError'));
+      setSubmitting(false);
       return;
+    }
+
+    // All checks passed — persist the account in the local database.
+    // TODO(backend): replace with the real sign-up endpoint.
+    try {
+      await registerUser({ email, fullName, password });
+      navigate('/auth');
+    } catch (err) {
+      if (err instanceof EmailTakenError) {
+        setFormError(t('auth.emailTaken'));
+      } else {
+        setFormError(t('auth.errGeneric'));
+      }
     } finally {
       setSubmitting(false);
     }
@@ -82,7 +101,13 @@ const Register = () => {
       <AuthHeading>{t('auth.registerTitle')}</AuthHeading>
 
       <form className="space-y-4" onSubmit={handleSubmit} noValidate>
-        <AuthInput type="text" placeholder={t('auth.fullName')} autoComplete="name" />
+        <AuthInput
+          type="text"
+          placeholder={t('auth.fullName')}
+          autoComplete="name"
+          value={fullName}
+          onChange={(e) => setFullName(e.target.value)}
+        />
         <AuthInput
           type="email"
           placeholder={t('auth.email')}
