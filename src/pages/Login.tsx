@@ -1,13 +1,35 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import { ShieldAlert } from 'lucide-react';
 import AuthLayout from '@/components/auth/AuthLayout';
 import { AuthHeading, AuthInput, PasswordInput, AuthSubmit, OrDivider, SocialButton } from '@/components/auth/AuthControls';
 import {
   FacebookIcon, LinkedInIcon, GoogleIcon, TelegramIcon, ViberIcon, WhatsAppIcon,
 } from '@/components/auth/brandIcons';
+import { isValidEmail } from '@/lib/validators';
 
 const Login = () => {
   const { t } = useTranslation();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [formError, setFormError] = useState<string | null>(null);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setFormError(null);
+
+    if (!isValidEmail(email)) {
+      setFormError(t('auth.invalidEmail'));
+      return;
+    }
+    if (!password) {
+      setFormError(t('auth.passwordRequired'));
+      return;
+    }
+
+    // TODO(backend): call sign-in endpoint with the validated credentials.
+  };
 
   const providers = [
     { icon: <FacebookIcon />, name: 'Facebook' },
@@ -22,9 +44,28 @@ const Login = () => {
     <AuthLayout active="login">
       <AuthHeading>{t('auth.loginTitle')}</AuthHeading>
 
-      <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
-        <AuthInput type="email" placeholder={t('auth.username')} autoComplete="email" />
-        <PasswordInput placeholder={t('auth.password')} autoComplete="current-password" />
+      <form className="space-y-4" onSubmit={handleSubmit} noValidate>
+        <AuthInput
+          type="email"
+          placeholder={t('auth.username')}
+          autoComplete="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+        <PasswordInput
+          placeholder={t('auth.password')}
+          autoComplete="current-password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+
+        {formError && (
+          <p className="flex items-center gap-2 text-sm text-red-400">
+            <ShieldAlert className="h-4 w-4 shrink-0" />
+            {formError}
+          </p>
+        )}
+
         <AuthSubmit>{t('auth.loginBtn')}</AuthSubmit>
       </form>
 

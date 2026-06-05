@@ -1,7 +1,10 @@
 import type { ReactNode, InputHTMLAttributes } from 'react';
 import { useState } from 'react';
-import { Eye, EyeOff } from 'lucide-react';
+import { Check, Eye, EyeOff, Loader2, ShieldAlert, ShieldCheck } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { passwordRules } from '@/lib/passwordRules';
+import type { BreachStatus as BreachResult } from '@/hooks/usePasswordBreach';
+import type { MatchStatus as MatchResult } from '@/hooks/usePasswordMatch';
 
 export const AuthHeading = ({ children }: { children: ReactNode }) => (
   <h1 className="mb-8 text-center text-3xl sm:text-4xl font-bold text-[#FFCC18]">{children}</h1>
@@ -77,4 +80,89 @@ export const SocialButton = ({ icon, label }: { icon: ReactNode; label: string }
     <span className="absolute left-5 flex h-8 w-8 items-center justify-center">{icon}</span>
     <span className="flex-1 text-center font-bold text-white">{label}</span>
   </button>
+);
+
+// Live checklist of the password requirements (highlights satisfied rules).
+export const PasswordChecklist = ({ password }: { password: string }) => {
+  const { t } = useTranslation();
+  return (
+    <ul className="space-y-2 py-1">
+      {passwordRules.map((rule) => {
+        const met = rule.test(password);
+        return (
+          <li
+            key={rule.key}
+            className={`flex items-center gap-3 text-sm transition-colors ${met ? 'text-[#FFCC18]' : 'text-white/85'}`}
+          >
+            <span
+              className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-[2px] border transition-colors ${met ? 'border-[#FFCC18] bg-[#FFCC18]' : 'border-white/50'}`}
+            >
+              {met && <Check className="h-3 w-3 text-black" />}
+            </span>
+            {t(rule.key)}
+          </li>
+        );
+      })}
+    </ul>
+  );
+};
+
+// HIBP k-anonymity breach lookup status line.
+export const BreachStatus = ({ breach }: { breach: BreachResult }) => {
+  const { t } = useTranslation();
+  if (breach.state === 'checking') {
+    return (
+      <p className="flex items-center gap-2 text-sm text-white/70">
+        <Loader2 className="h-4 w-4 animate-spin" />
+        {t('auth.breachChecking')}
+      </p>
+    );
+  }
+  if (breach.state === 'safe') {
+    return (
+      <p className="flex items-center gap-2 text-sm text-[#FFCC18]">
+        <ShieldCheck className="h-4 w-4" />
+        {t('auth.breachSafe')}
+      </p>
+    );
+  }
+  if (breach.state === 'breached') {
+    return (
+      <p className="flex items-center gap-2 text-sm text-red-400">
+        <ShieldAlert className="h-4 w-4 shrink-0" />
+        {t('auth.breachFound', { count: breach.count })}
+      </p>
+    );
+  }
+  return null;
+};
+
+// Confirm-password match status line.
+export const MatchStatus = ({ match }: { match: MatchResult }) => {
+  const { t } = useTranslation();
+  if (match.state === 'mismatch') {
+    return (
+      <p className="flex items-center gap-2 text-sm text-red-400">
+        <ShieldAlert className="h-4 w-4 shrink-0" />
+        {t('auth.passwordMismatch')}
+      </p>
+    );
+  }
+  if (match.state === 'match') {
+    return (
+      <p className="flex items-center gap-2 text-sm text-[#FFCC18]">
+        <ShieldCheck className="h-4 w-4 shrink-0" />
+        {t('auth.passwordMatch')}
+      </p>
+    );
+  }
+  return null;
+};
+
+// Form-level error line shown after a submit attempt.
+export const AuthError = ({ message }: { message: string }) => (
+  <p className="flex items-center gap-2 text-sm text-red-400">
+    <ShieldAlert className="h-4 w-4 shrink-0" />
+    {message}
+  </p>
 );

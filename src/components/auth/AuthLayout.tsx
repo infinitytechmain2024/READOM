@@ -6,7 +6,7 @@ import Logo from '@/components/Logo';
 import Footer from '@/components/Footer';
 import authBg from '@/assets/auth-library.png';
 
-type Tab = 'login' | 'register';
+type Tab = 'login' | 'register' | 'none';
 
 const TabLink = ({ to, label, isActive }: { to: string; label: string; isActive: boolean }) => (
   <Link
@@ -42,10 +42,12 @@ const AuthLayout = ({ active, children }: { active: Tab; children: ReactNode }) 
             <span className="text-2xl font-bold">{t('brand')}</span>
           </Link>
 
-          <div className="flex items-center justify-center gap-10 sm:gap-20 mb-14">
-            <TabLink to="/auth" label={t('auth.tabLogin')} isActive={active === 'login'} />
-            <TabLink to="/register" label={t('auth.tabRegister')} isActive={active === 'register'} />
-          </div>
+          {active !== 'none' && (
+            <div className="flex items-center justify-center gap-10 sm:gap-20 mb-14">
+              <TabLink to="/auth" label={t('auth.tabLogin')} isActive={active === 'login'} />
+              <TabLink to="/register" label={t('auth.tabRegister')} isActive={active === 'register'} />
+            </div>
+          )}
 
           <motion.div
             initial={{ opacity: 0, y: 16 }}
