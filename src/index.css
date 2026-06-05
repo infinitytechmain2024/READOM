@@ -54,6 +54,52 @@
 
     font-family: 'Open Sans', sans-serif;
   }
+
+  /* Light theme — applied when next-themes adds the `light` class to <html>. */
+  .light {
+    --background: 0 0% 100%;
+    --foreground: 220 15% 12%;
+
+    --card: 220 20% 98%;
+    --card-foreground: 220 15% 12%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 15% 12%;
+
+    --primary: 43 80% 50%;
+    --primary-foreground: 220 15% 8%;
+
+    --secondary: 220 14% 95%;
+    --secondary-foreground: 220 15% 20%;
+
+    --muted: 220 14% 95%;
+    --muted-foreground: 220 10% 40%;
+
+    --accent: 43 80% 50%;
+    --accent-foreground: 220 15% 8%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 13% 88%;
+    --input: 220 13% 88%;
+    --ring: 43 80% 50%;
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 220 15% 12%;
+    --sidebar-primary: 43 80% 50%;
+    --sidebar-primary-foreground: 220 15% 8%;
+    --sidebar-accent: 220 14% 94%;
+    --sidebar-accent-foreground: 220 15% 12%;
+    --sidebar-border: 220 13% 88%;
+    --sidebar-ring: 43 80% 50%;
+
+    --gold: 43 80% 48%;
+    --gold-light: 43 80% 58%;
+    --gold-dark: 43 80% 38%;
+    --surface-elevated: 0 0% 98%;
+    --surface-overlay: 0 0% 100%;
+  }
 }
 
 @layer base {

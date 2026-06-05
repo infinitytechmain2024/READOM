@@ -1,9 +1,10 @@
 import { useTranslation } from 'react-i18next';
-import { Apple, Play, Globe } from 'lucide-react';
+import { Globe } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import Logo from './Logo';
+import appBadges from '@/assets/app-badges.svg';
 
 const Footer = () => {
   const { t, i18n } = useTranslation();
@@ -75,22 +76,13 @@ const Footer = () => {
         {/* Bottom bar */}
         <div className="flex flex-col lg:flex-row items-center justify-between gap-6 pt-8 border-t border-border">
           {/* App store badges */}
-          <div className="flex items-center gap-3">
-            <a href="#" className="flex items-center gap-2 h-11 px-4 rounded-lg border border-border bg-card hover:border-primary/50 transition-colors">
-              <Play className="h-5 w-5 text-foreground" />
-              <span className="text-left leading-none">
-                <span className="block text-[10px] text-muted-foreground">GET IT ON</span>
-                <span className="block text-sm font-semibold text-foreground">Google Play</span>
-              </span>
-            </a>
-            <a href="#" className="flex items-center gap-2 h-11 px-4 rounded-lg border border-border bg-card hover:border-primary/50 transition-colors">
-              <Apple className="h-5 w-5 text-foreground" />
-              <span className="text-left leading-none">
-                <span className="block text-[10px] text-muted-foreground">Download on the</span>
-                <span className="block text-sm font-semibold text-foreground">App Store</span>
-              </span>
-            </a>
-          </div>
+          <a href="#" className="shrink-0 transition-opacity hover:opacity-90">
+            <img
+              src={appBadges}
+              alt="Get it on Google Play / Download on the App Store"
+              className="h-24 w-auto"
+            />
+          </a>
 
           {/* Controls */}
           <div className="flex flex-wrap items-center justify-center gap-5">

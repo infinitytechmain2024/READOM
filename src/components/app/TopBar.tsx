@@ -6,6 +6,7 @@ import { useState, useMemo, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { mockBooks } from '@/data/books';
 import Logo from '@/components/Logo';
+import ThemeToggle from '@/components/ThemeToggle';
 
 const languages = [
   { code: 'en', label: 'English', flag: '🇬🇧' },
@@ -127,8 +128,9 @@ const TopBar = ({ onToggleSidebar }: TopBarProps) => {
         )}
       </div>
 
-      {/* Right: language + sign in */}
+      {/* Right: theme + language + sign in */}
       <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+        <ThemeToggle />
         <div
           className="relative hidden sm:block"
           onMouseEnter={() => setIsLangOpen(true)}
