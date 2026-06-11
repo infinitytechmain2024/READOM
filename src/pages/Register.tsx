@@ -12,7 +12,7 @@ import { getPasswordBreachCount } from '@/lib/passwordBreach';
 import { isValidEmail } from '@/lib/validators';
 import { usePasswordBreach } from '@/hooks/usePasswordBreach';
 import { usePasswordMatch } from '@/hooks/usePasswordMatch';
-import { registerUser, EmailTakenError } from '@/integrations/localdb';
+import { supabase } from '@/integrations/supabase/client';
 
 const Register = () => {
   const { t } = useTranslation();
@@ -71,17 +71,29 @@ const Register = () => {
       return;
     }
 
-    // All checks passed — persist the account in the local database.
-    // TODO(backend): replace with the real sign-up endpoint.
+    // All checks passed — create account with Supabase Auth.
     try {
-      await registerUser({ email, fullName, password });
-      navigate('/auth');
-    } catch (err) {
-      if (err instanceof EmailTakenError) {
-        setFormError(t('auth.emailTaken'));
-      } else {
-        setFormError(t('auth.errGeneric'));
+      const redirectTo = `${window.location.origin}${import.meta.env.BASE_URL}auth/callback`;
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { full_name: fullName },
+          emailRedirectTo: redirectTo,
+        },
+      });
+      if (error) {
+        const msg = error.message.toLowerCase();
+        if (msg.includes('already registered') || msg.includes('user already exists') || msg.includes('already been registered')) {
+          setFormError(t('auth.emailTaken'));
+        } else {
+          setFormError(error.message);
+        }
+        return;
       }
+      navigate('/register/confirm', { state: { email } });
+    } catch {
+      setFormError(t('auth.errGeneric'));
     } finally {
       setSubmitting(false);
     }
