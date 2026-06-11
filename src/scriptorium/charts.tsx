@@ -50,7 +50,7 @@ export function DonutChart({ segments, total, size = 170 }: { segments: AgeSegme
 }
 
 interface Pt { x: number; y: number; }
-function smoothPath(pts: Pt[]): string {
+export function smoothPath(pts: Pt[]): string {
   if (pts.length < 2) return '';
   let d = `M ${pts[0].x} ${pts[0].y}`;
   for (let i = 0; i < pts.length - 1; i++) {
@@ -145,6 +145,20 @@ export function LineChart({ data, labels, color = '#15B97C', height = 230 }: { d
           </g>
         </g>
       )}
+    </svg>
+  );
+}
+
+export function Spark({ data, color = '#15B97C', w = 150, h = 30 }: { data: number[]; color?: string; w?: number; h?: number }) {
+  const max = Math.max(...data), min = Math.min(...data);
+  const x = (i: number) => (i / (data.length - 1)) * w;
+  const y = (v: number) => h - 3 - ((v - min) / (max - min || 1)) * (h - 6);
+  const pts: Pt[] = data.map((v, i) => ({ x: x(i), y: y(v) }));
+  const d = smoothPath(pts);
+  return (
+    <svg viewBox={`0 0 ${w} ${h}`} width="100%" height={h} preserveAspectRatio="none" style={{ display: 'block' }}>
+      <path d={`${d} L ${w} ${h} L 0 ${h} Z`} fill={color} opacity="0.13" />
+      <path d={d} fill="none" stroke={color} strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
