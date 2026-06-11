@@ -1,51 +1,33 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { Check, Loader2, ShieldAlert, ShieldCheck } from 'lucide-react';
+import { Loader2, Mail, ShieldAlert } from 'lucide-react';
 import AuthLayout from '@/components/auth/AuthLayout';
-import { AuthHeading, AuthInput, PasswordInput, AuthSubmit, OrDivider, SocialButton } from '@/components/auth/AuthControls';
+import { AuthHeading, AuthInput, AuthSubmit, OrDivider, SocialButton } from '@/components/auth/AuthControls';
 import { GoogleIcon, TelegramIcon, ViberIcon, WhatsAppIcon } from '@/components/auth/brandIcons';
-import { passwordRules, isPasswordValid } from '@/lib/passwordRules';
-import { getPasswordBreachCount } from '@/lib/passwordBreach';
 import { isValidEmail } from '@/lib/validators';
-import { usePasswordBreach } from '@/hooks/usePasswordBreach';
+import { supabase } from '@/integrations/supabase/client';
 
 const ResetPassword = () => {
   const { t } = useTranslation();
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-
-  const rulesValid = isPasswordValid(password);
-  const breach = usePasswordBreach(password, rulesValid);
+  const [sent, setSent] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError(null);
+    if (!isValidEmail(email)) { setFormError(t('auth.invalidEmail')); return; }
 
-    if (!isValidEmail(email)) {
-      setFormError(t('auth.invalidEmail'));
-      return;
-    }
-    if (!rulesValid) {
-      setFormError(t('auth.fixPasswordRules'));
-      return;
-    }
-
-    // Authoritative breach check on submit (k-anonymity — the password never
-    // leaves the device intact).
     setSubmitting(true);
     try {
-      const count = await getPasswordBreachCount(password);
-      if (count > 0) {
-        setFormError(t('auth.breachFound', { count }));
-        return;
-      }
-      // TODO(backend): call the password-reset endpoint with the new password.
+      const redirectTo = `${window.location.origin}${import.meta.env.BASE_URL}auth/callback`;
+      const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
+      if (error) { setFormError(error.message); return; }
+      setSent(true);
     } catch {
-      setFormError(t('auth.breachCheckError'));
-      return;
+      setFormError(t('auth.errGeneric'));
     } finally {
       setSubmitting(false);
     }
@@ -58,9 +40,28 @@ const ResetPassword = () => {
     { icon: <WhatsAppIcon />, name: 'WhatsApp' },
   ];
 
+  if (sent) {
+    return (
+      <AuthLayout active="login">
+        <div className="flex flex-col items-center gap-5 py-4">
+          <Mail className="h-14 w-14 text-primary" />
+          <AuthHeading>{t('auth.checkEmailTitle')}</AuthHeading>
+          <p className="text-center text-sm text-white/75 max-w-xs">
+            {t('auth.checkEmailResetBody', { email })}
+          </p>
+          <p className="text-center text-xs text-white/50">{t('auth.checkEmailHint')}</p>
+          <Link to="/auth" className="text-sm font-semibold text-primary hover:underline">
+            {t('auth.backToLogin')}
+          </Link>
+        </div>
+      </AuthLayout>
+    );
+  }
+
   return (
     <AuthLayout active="login">
-      <AuthHeading>{t('auth.resetTitle')}</AuthHeading>
+      <AuthHeading>{t('auth.forgotTitle')}</AuthHeading>
+      <p className="text-center text-sm text-white/75 mb-4">{t('auth.forgotSubtitle')}</p>
 
       <form className="space-y-4" onSubmit={handleSubmit} noValidate>
         <AuthInput
@@ -70,52 +71,6 @@ const ResetPassword = () => {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
-        <PasswordInput
-          placeholder={t('auth.confirmPassword')}
-          autoComplete="new-password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-
-        {/* password requirement checklist */}
-        <ul className="space-y-2 py-1">
-          {passwordRules.map((rule) => {
-            const met = rule.test(password);
-            return (
-              <li
-                key={rule.key}
-                className={`flex items-center gap-3 text-sm transition-colors ${met ? 'text-[#FFCC18]' : 'text-white/85'}`}
-              >
-                <span
-                  className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-[2px] border transition-colors ${met ? 'border-[#FFCC18] bg-[#FFCC18]' : 'border-white/50'}`}
-                >
-                  {met && <Check className="h-3 w-3 text-black" />}
-                </span>
-                {t(rule.key)}
-              </li>
-            );
-          })}
-        </ul>
-
-        {/* breach check status (HIBP k-anonymity) */}
-        {breach.state === 'checking' && (
-          <p className="flex items-center gap-2 text-sm text-white/70">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            {t('auth.breachChecking')}
-          </p>
-        )}
-        {breach.state === 'safe' && (
-          <p className="flex items-center gap-2 text-sm text-[#FFCC18]">
-            <ShieldCheck className="h-4 w-4" />
-            {t('auth.breachSafe')}
-          </p>
-        )}
-        {breach.state === 'breached' && (
-          <p className="flex items-center gap-2 text-sm text-red-400">
-            <ShieldAlert className="h-4 w-4 shrink-0" />
-            {t('auth.breachFound', { count: breach.count })}
-          </p>
-        )}
 
         {formError && (
           <p className="flex items-center gap-2 text-sm text-red-400">
@@ -125,12 +80,13 @@ const ResetPassword = () => {
         )}
 
         <AuthSubmit disabled={submitting}>
-          {submitting ? t('auth.breachChecking') : t('auth.registerBtn')}
+          {submitting ? <Loader2 className="h-4 w-4 animate-spin inline mr-2" /> : null}
+          {t('auth.sendResetLink')}
         </AuthSubmit>
       </form>
 
       <p className="mt-5 text-center text-sm text-white/75">
-        {t('auth.haveAccount')}{' '}
+        {t('auth.rememberPassword')}{' '}
         <Link to="/auth" className="font-bold text-white hover:text-primary transition-colors">
           {t('auth.signIn')}
         </Link>

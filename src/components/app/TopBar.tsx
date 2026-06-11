@@ -1,12 +1,13 @@
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
-import { Menu, Search, X, Globe, ChevronDown, Check } from 'lucide-react';
+import { Menu, Search, X, Globe, ChevronDown, Check, LogOut, PenLine } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { mockBooks } from '@/data/books';
 import Logo from '@/components/Logo';
 import ThemeToggle from '@/components/ThemeToggle';
+import { useAuth } from '@/contexts/AuthContext';
 
 const languages = [
   { code: 'en', label: 'English', flag: '🇬🇧' },
@@ -20,10 +21,21 @@ interface TopBarProps {
 const TopBar = ({ onToggleSidebar }: TopBarProps) => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+  const { user, signOut } = useAuth();
   const [query, setQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const [isLangOpen, setIsLangOpen] = useState(false);
+  const [isUserOpen, setIsUserOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const userMenuRef = useRef<HTMLDivElement>(null);
+
+  const displayName = user?.user_metadata?.full_name ?? user?.email?.split('@')[0] ?? '';
+  const initials = displayName
+    .split(' ')
+    .map((w: string) => w[0] ?? '')
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
 
   const currentLang = languages.find((l) => l.code === i18n.language) ?? languages[0];
 
@@ -42,6 +54,9 @@ const TopBar = ({ onToggleSidebar }: TopBarProps) => {
     const onClick = (e: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
         setIsOpen(false);
+      }
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
+        setIsUserOpen(false);
       }
     };
     document.addEventListener('mousedown', onClick);
@@ -172,15 +187,60 @@ const TopBar = ({ onToggleSidebar }: TopBarProps) => {
           </AnimatePresence>
         </div>
 
-        <Link to="/auth">
-          <Button
-            variant="outline"
-            size="sm"
-            className="rounded-full border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground font-semibold"
-          >
-            {t('nav.signIn')}
-          </Button>
-        </Link>
+        {user ? (
+          <div ref={userMenuRef} className="relative">
+            <button
+              onClick={() => setIsUserOpen((v) => !v)}
+              className="flex items-center gap-2 h-10 px-2 rounded-full text-sm text-foreground/80 hover:bg-foreground/10 transition-colors"
+            >
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold">
+                {initials || '?'}
+              </span>
+              <span className="hidden md:inline max-w-[120px] truncate font-medium">{displayName}</span>
+              <ChevronDown className="h-3.5 w-3.5 shrink-0" />
+            </button>
+            <AnimatePresence>
+              {isUserOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: -8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.15 }}
+                  className="absolute right-0 mt-1 w-52 origin-top-right bg-popover border border-border rounded-xl p-1.5 shadow-xl z-50"
+                >
+                  <div className="px-3 py-2 border-b border-border mb-1">
+                    <p className="text-sm font-semibold text-foreground truncate">{displayName}</p>
+                    <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                  </div>
+                  <button
+                    onClick={() => { setIsUserOpen(false); navigate('/scriptorium'); }}
+                    className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-foreground/80 hover:bg-foreground/5 transition-colors"
+                  >
+                    <PenLine className="h-4 w-4" />
+                    {t('app.write')}
+                  </button>
+                  <button
+                    onClick={async () => { setIsUserOpen(false); await signOut(); navigate('/'); }}
+                    className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-red-400 hover:bg-red-500/10 transition-colors"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    {t('auth.logoutBtn')}
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        ) : (
+          <Link to="/auth">
+            <Button
+              variant="outline"
+              size="sm"
+              className="rounded-full border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground font-semibold"
+            >
+              {t('nav.signIn')}
+            </Button>
+          </Link>
+        )}
       </div>
     </header>
   );

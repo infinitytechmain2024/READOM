@@ -7,10 +7,13 @@ import FeaturedSpotlight from '@/components/app/FeaturedSpotlight';
 import BookGrid from '@/components/app/BookGrid';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { mockBooks } from '@/data/books';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Index = () => {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const isMobile = useIsMobile();
+  const firstName = (user?.user_metadata?.full_name as string | undefined)?.split(' ')[0] ?? '';
   // Desktop sidebar starts expanded; mobile drawer starts closed.
   const [sidebarExpanded, setSidebarExpanded] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -53,6 +56,25 @@ const Index = () => {
         <CategoryChips active={category} onSelect={setCategory} />
 
         <main className="px-4 pb-16 pt-5 max-w-[1600px] mx-auto">
+          {isHome && user && (
+            <div className="mb-6 rounded-2xl bg-primary/10 border border-primary/20 px-5 py-4 flex items-center justify-between gap-4">
+              <div>
+                <h2 className="font-display font-bold text-xl text-foreground">
+                  {firstName ? `Welcome back, ${firstName}!` : 'Welcome back!'}
+                </h2>
+                <p className="text-sm text-muted-foreground mt-0.5">
+                  {t('sections.best')} — here's what's trending for you today.
+                </p>
+              </div>
+              <a
+                href="/READOM/scriptorium"
+                className="shrink-0 text-sm font-semibold text-primary border border-primary/40 rounded-full px-4 py-1.5 hover:bg-primary hover:text-primary-foreground transition-colors"
+              >
+                {t('app.write')}
+              </a>
+            </div>
+          )}
+
           {isHome ? (
             <>
               <FeaturedSpotlight book={featured} />

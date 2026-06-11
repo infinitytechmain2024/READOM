@@ -8,7 +8,7 @@ import {
   FacebookIcon, LinkedInIcon, GoogleIcon, TelegramIcon, ViberIcon, WhatsAppIcon,
 } from '@/components/auth/brandIcons';
 import { isValidEmail } from '@/lib/validators';
-import { authenticateUser, startSession, InvalidCredentialsError } from '@/integrations/localdb';
+import { supabase } from '@/integrations/supabase/client';
 
 const Login = () => {
   const { t } = useTranslation();
@@ -31,19 +31,21 @@ const Login = () => {
       return;
     }
 
-    // Authenticate against the local database.
-    // TODO(backend): replace with the real sign-in endpoint.
     setSubmitting(true);
     try {
-      const user = await authenticateUser(email, password);
-      startSession(user);
-      navigate('/');
-    } catch (err) {
-      if (err instanceof InvalidCredentialsError) {
-        setFormError(t('auth.invalidCredentials'));
-      } else {
-        setFormError(t('auth.errGeneric'));
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) {
+        const msg = error.message.toLowerCase();
+        if (msg.includes('invalid') || msg.includes('credentials') || msg.includes('email not confirmed')) {
+          setFormError(t('auth.invalidCredentials'));
+        } else {
+          setFormError(error.message);
+        }
+        return;
       }
+      navigate('/');
+    } catch {
+      setFormError(t('auth.errGeneric'));
     } finally {
       setSubmitting(false);
     }

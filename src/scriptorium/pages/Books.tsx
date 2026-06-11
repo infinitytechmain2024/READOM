@@ -23,7 +23,7 @@ const Books = () => {
             <button key={f} className={'pill' + (filter === f ? ' active' : '')} onClick={() => setFilter(f)}>{f}</button>
           ))}
         </div>
-        <button className="btn btn-yellow" onClick={() => navigate('/scriptorium/write')}><Ic.plus /> New book</button>
+        <button className="btn btn-yellow" onClick={() => navigate('/scriptorium/write/b1')}><Ic.plus /> New book</button>
       </div>
 
       <div className="book-grid">

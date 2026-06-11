@@ -7,7 +7,7 @@ const BookDetail = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const b = BOOKS.find((x) => x.id === id) ?? BOOKS[0];
-  const write = () => navigate('/scriptorium/write');
+  const write = () => navigate(`/scriptorium/write/${b.id}`);
 
   return (
     <div>
