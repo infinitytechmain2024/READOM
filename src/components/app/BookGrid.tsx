@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Play, Star } from 'lucide-react';
+import { Star, BookOpenText } from 'lucide-react';
 import { getBookMeta, type Book } from '@/data/books';
 
 interface BookGridProps {
@@ -46,10 +46,10 @@ const BookGrid = ({ titleKey, title, books }: BookGridProps) => {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
 
-                  {/* Hover play affordance */}
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                    <span className="h-12 w-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg">
-                      <Play className="h-5 w-5 fill-current ml-0.5" />
+                  {/* Hover book-open affordance */}
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="h-16 w-16 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-xl scale-0 group-hover:scale-100 transition-transform duration-300 ease-out">
+                      <BookOpenText className="h-7 w-7" />
                     </span>
                   </div>
 
