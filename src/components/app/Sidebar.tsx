@@ -3,7 +3,7 @@ import { NavLink } from 'react-router-dom';
 import {
   Home, Flame, Sparkles, Library, Clock, Heart, PenLine,
   LayoutGrid, Briefcase, Brain, Wand2, Rocket, Lightbulb,
-  User, Skull, Search, type LucideIcon,
+  User, Skull, Search, Coins, type LucideIcon,
 } from 'lucide-react';
 import { genres } from '@/data/books';
 
@@ -111,6 +111,20 @@ const Sidebar = ({ expanded, mobileOpen, onClose, activeGenre, onSelectGenre }: 
               <span className={showLabels ? '' : 'text-[10px]'}>{label}</span>
             </div>
           ))}
+          <NavLink
+            to="/wallet"
+            onClick={onClose}
+            className={({ isActive }) => [
+              itemBase,
+              isActive
+                ? 'bg-primary/15 text-primary'
+                : 'text-foreground/80 hover:bg-foreground/5 hover:text-foreground',
+              showLabels ? 'gap-4 px-3 h-10' : 'flex-col gap-1 h-16 justify-center',
+            ].join(' ')}
+          >
+            <Coins className="h-5 w-5 shrink-0" />
+            <span className={showLabels ? '' : 'text-[10px]'}>{t('app.wallet')}</span>
+          </NavLink>
         </nav>
 
         {showLabels && (

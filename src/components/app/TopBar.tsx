@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
-import { Menu, Search, X, Globe, ChevronDown, Check, LogOut, PenLine } from 'lucide-react';
+import { Menu, Search, X, Globe, ChevronDown, Check, LogOut, PenLine, Coins } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
@@ -8,6 +8,8 @@ import { mockBooks } from '@/data/books';
 import Logo from '@/components/Logo';
 import ThemeToggle from '@/components/ThemeToggle';
 import { useAuth } from '@/contexts/AuthContext';
+import { useReadWallet } from '@/hooks/useReadWallet';
+import { TOKEN_SYMBOL } from '@/integrations/readnet';
 
 const languages = [
   { code: 'en', label: 'English', flag: '🇬🇧' },
@@ -22,6 +24,7 @@ const TopBar = ({ onToggleSidebar }: TopBarProps) => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
+  const { wallet } = useReadWallet();
   const [query, setQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const [isLangOpen, setIsLangOpen] = useState(false);
@@ -187,6 +190,18 @@ const TopBar = ({ onToggleSidebar }: TopBarProps) => {
           </AnimatePresence>
         </div>
 
+        {user && (
+          <Link
+            to="/wallet"
+            title={t('app.wallet')}
+            className="flex items-center gap-1.5 h-9 px-3 rounded-full border border-primary/40 bg-primary/10 text-primary text-sm font-semibold hover:bg-primary/20 transition-colors"
+          >
+            <Coins className="h-4 w-4" />
+            <span className="tabular-nums">{wallet.data?.balance ?? '…'}</span>
+            <span className="hidden md:inline">{TOKEN_SYMBOL}</span>
+          </Link>
+        )}
+
         {user ? (
           <div ref={userMenuRef} className="relative">
             <button
@@ -212,6 +227,13 @@ const TopBar = ({ onToggleSidebar }: TopBarProps) => {
                     <p className="text-sm font-semibold text-foreground truncate">{displayName}</p>
                     <p className="text-xs text-muted-foreground truncate">{user.email}</p>
                   </div>
+                  <button
+                    onClick={() => { setIsUserOpen(false); navigate('/wallet'); }}
+                    className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-foreground/80 hover:bg-foreground/5 transition-colors"
+                  >
+                    <Coins className="h-4 w-4" />
+                    {t('app.wallet')}
+                  </button>
                   <button
                     onClick={() => { setIsUserOpen(false); navigate('/scriptorium'); }}
                     className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-foreground/80 hover:bg-foreground/5 transition-colors"

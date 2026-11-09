@@ -24,6 +24,7 @@ import ScriptoriumSettings from "./scriptorium/pages/Settings.tsx";
 import ScriptoriumSupport from "./scriptorium/pages/Support.tsx";
 import ScriptoriumWrite from "./scriptorium/pages/Write.tsx";
 import ScriptoriumPlaceholder from "./scriptorium/pages/Placeholder.tsx";
+import Wallet from "./pages/Wallet.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -46,6 +47,7 @@ const App = () => (
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/reset-password/set" element={<SetPassword />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
+            <Route path="/wallet" element={<Wallet />} />
             <Route path="/scriptorium/write/:bookId?" element={<ScriptoriumWrite />} />
             <Route path="/scriptorium" element={<ScriptoriumLayout />}>
               <Route index element={<ScriptoriumDashboard />} />

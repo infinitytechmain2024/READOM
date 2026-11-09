@@ -3,11 +3,22 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   ArrowLeft, Minus, Plus, Star, ChevronLeft, ChevronRight, Play, BookOpen,
-  PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, Type,
+  PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, Type, Coins, Gift, CheckCircle2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { getBook, getChapters, getBookMeta, mockBooks } from '@/data/books';
 import Logo from '@/components/Logo';
+import {
+  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
+} from '@/components/ui/dialog';
+import { useReadWallet } from '@/hooks/useReadWallet';
+import { CHAPTER_REWARD, NetworkError, REWARD_COOLDOWN_SECONDS, TOKEN_SYMBOL } from '@/integrations/readnet';
+
+/** A chapter counts as read once scrolled this far… */
+const REWARD_PROGRESS = 90;
+/** …and open for at least this long (matches the network's reward cooldown). */
+const REWARD_DWELL_MS = REWARD_COOLDOWN_SECONDS * 1000;
+const TIP_PRESETS = [5, 10, 25, 50];
 
 const FONT_MIN = 16;
 const FONT_MAX = 26;
@@ -25,6 +36,14 @@ const Reader = () => {
   const [relatedOpen, setRelatedOpen] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  const { user, wallet, claim, tip } = useReadWallet();
+  const chapterOpenedAt = useRef(Date.now());
+  const attempted = useRef(new Set<string>());
+  const [claimed, setClaimed] = useState<Set<string>>(() => new Set());
+  const [tipOpen, setTipOpen] = useState(false);
+  const [tipAmount, setTipAmount] = useState(10);
+  const rewardKey = `${id}#${chapterIndex}`;
+
   useEffect(() => {
     setChapterIndex(0);
   }, [id]);
@@ -32,7 +51,37 @@ const Reader = () => {
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: 0 });
     setProgress(0);
+    chapterOpenedAt.current = Date.now();
   }, [chapterIndex, id]);
+
+  // Reading reward: once the chapter is (nearly) scrolled through and has been
+  // open long enough, claim it on the READOM Network. One attempt per chapter
+  // per visit; the network itself dedupes, rate-limits and caps rewards.
+  useEffect(() => {
+    if (!user || !id || attempted.current.has(rewardKey)) return;
+    const el = scrollRef.current;
+    const fits = !!el && el.scrollHeight <= el.clientHeight + 4;
+    if (progress < REWARD_PROGRESS && !fits) return;
+
+    const wait = Math.max(0, REWARD_DWELL_MS - (Date.now() - chapterOpenedAt.current));
+    const timer = window.setTimeout(() => {
+      if (attempted.current.has(rewardKey)) return;
+      attempted.current.add(rewardKey);
+      claim.mutate(
+        { bookId: id, chapter: chapterIndex },
+        {
+          onSuccess: () => setClaimed((s) => new Set(s).add(rewardKey)),
+          onError: (e) => {
+            if (e instanceof NetworkError && e.code === 'already_claimed') setClaimed((s) => new Set(s).add(rewardKey));
+            // Cooldown: allow a retry on the next scroll event.
+            if (e instanceof NetworkError && e.code === 'cooldown') attempted.current.delete(rewardKey);
+          },
+        },
+      );
+    }, wait);
+    return () => window.clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [progress, rewardKey, user]);
 
   const chapters = useMemo(() => (book ? getChapters(book) : []), [book]);
 
@@ -107,6 +156,18 @@ const Reader = () => {
 
         <div className="flex-1" />
 
+        {/* Tip the author (READ token) */}
+        {user && (
+          <button
+            onClick={() => setTipOpen(true)}
+            aria-label={t('readnet.tip')}
+            className="h-10 flex items-center gap-2 px-3 rounded-full text-primary hover:bg-primary/10 transition-colors"
+          >
+            <Gift className="h-4 w-4 shrink-0" />
+            <span className="text-sm font-medium hidden md:block">{t('readnet.tip')}</span>
+          </button>
+        )}
+
         {/* Related toggle */}
         <button
           onClick={() => setRelatedOpen((v) => !v)}
@@ -169,7 +230,7 @@ const Reader = () => {
 
         {/* Scrollable reading column */}
         <div ref={scrollRef} onScroll={onScroll} className="flex-1 overflow-y-auto">
-          <article className="mx-auto max-w-2xl px-5 sm:px-8 py-10">
+          <article className="mx-auto max-w-2xl px-5 sm:px-8 pt-10 pb-28">
             {/* Book header (compact, shown only when info panel is closed) */}
             {!infoOpen && (
               <div className="mb-6">
@@ -242,6 +303,16 @@ const Reader = () => {
                 {t('reader.next')} <ChevronRight className="h-4 w-4 ml-1" />
               </Button>
             </div>
+
+            {user && (
+              <p className="mt-6 flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
+                {claimed.has(rewardKey) ? (
+                  <><CheckCircle2 className="h-3.5 w-3.5 text-primary" /> {t('readnet.rewardDone')}</>
+                ) : (
+                  <><Coins className="h-3.5 w-3.5 text-primary" /> {t('readnet.rewardHint', { amount: CHAPTER_REWARD })}</>
+                )}
+              </p>
+            )}
           </article>
         </div>
 
@@ -305,6 +376,46 @@ const Reader = () => {
           <Plus className="h-4 w-4" />
         </button>
       </div>
+
+      <Dialog open={tipOpen} onOpenChange={setTipOpen}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Gift className="h-5 w-5 text-primary" /> {t('readnet.tipTitle', { author: book.author })}
+            </DialogTitle>
+            <DialogDescription>
+              {t('readnet.tipBody', { balance: wallet.data?.balance ?? 0 })}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-4 gap-2">
+            {TIP_PRESETS.map((v) => (
+              <button
+                key={v}
+                onClick={() => setTipAmount(v)}
+                className={`h-11 rounded-xl text-sm font-semibold transition-colors ${
+                  tipAmount === v ? 'bg-primary text-primary-foreground' : 'bg-secondary text-foreground/80 hover:bg-foreground/10'
+                }`}
+              >
+                {v}
+              </button>
+            ))}
+          </div>
+          <DialogFooter>
+            <Button
+              className="w-full rounded-full"
+              disabled={tip.isPending || (wallet.data?.balance ?? 0) < tipAmount}
+              onClick={() =>
+                tip.mutate(
+                  { author: book.author, bookId: book.id, amount: tipAmount },
+                  { onSuccess: () => setTipOpen(false) },
+                )
+              }
+            >
+              {t('readnet.tipBtn')} · {tipAmount} {TOKEN_SYMBOL}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

@@ -6,12 +6,14 @@
 // `STORES` + `onupgradeneeded` without touching call sites.
 
 const DB_NAME = 'readom';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
 // Object stores and the key path each is keyed by. Bump DB_VERSION whenever
 // this list changes so existing clients run the upgrade.
 export const STORES = {
   users: { keyPath: 'email' },
+  // READOM Network ledger snapshot (local fallback, see integrations/readnet).
+  readnet: { keyPath: 'id' },
 } as const;
 
 export type StoreName = keyof typeof STORES;
